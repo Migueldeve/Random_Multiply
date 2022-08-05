@@ -47,7 +47,8 @@ fun HomeScreen(
 ){
     val random1 = homeViewModel.random1.value
     val random2 = homeViewModel.random2.value
-    val result = homeViewModel.resulmult.value
+    val options = homeViewModel.optionList
+    val rest = homeViewModel.rest.value
 
 
     Scaffold()
@@ -55,14 +56,16 @@ fun HomeScreen(
       Home(
           onRandomButtonClick = { ->
               homeViewModel.getRandomNew() },
-          random1,random2,result)
+              random1,random2,options, onResultClicked = {
+              homeViewModel.evaluateResult(it)
+          },rest)
     }
 
 }
 @ExperimentalCoilApi
 @ExperimentalMaterialApi
 @Composable
-fun Home( onRandomButtonClick: () -> Unit,random1:String,random2:String,result:String) {
+fun Home(onRandomButtonClick: () -> Unit, random1:String, random2:String, options: List<Int>,onResultClicked: (Int) -> Unit,rest:String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,11 +77,11 @@ fun Home( onRandomButtonClick: () -> Unit,random1:String,random2:String,result:S
 
                 ),
     ){
-       RowHome(random1 = random1, random2 =random2 , result =result )
-
+       RowHome(random1 = random1, random2 =random2 , result =rest )
+        Grid(options = options, onResultClicked =onResultClicked )
         Button(modifier = Modifier
             .width(160.dp)
-            .padding(top = 500.dp)
+            .padding(top = 20.dp)
             .align(CenterHorizontally)
             .semantics { testTag = "login-button" },
             onClick = {onRandomButtonClick()  }) {
@@ -88,6 +91,8 @@ fun Home( onRandomButtonClick: () -> Unit,random1:String,random2:String,result:S
                 fontWeight = FontWeight.Medium
             )
         }
+
+
 
     }
 
@@ -129,9 +134,49 @@ fun LoginScreenToolbar() {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Grid(options:List<Int>, onResultClicked: (Int) -> Unit){
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(GRID_SPAN_COUNT),
+        content = {
+            items(options) {
+                Item(option = it, onResultClicked)
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun Item(option:Int, onResultClicked: (Int) -> Unit){
+    Surface(
+        modifier = Modifier
+            .padding(8.dp)
+            .height(100.dp)
+            .width(100.dp),
+        color = Color.Red,
+        onClick = { onResultClicked(option) },
+        shape = RoundedCornerShape(4.dp)
+
+    ) {
+        Text(
+            text = option.toString(),
+            color = Color.White,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 42.sp,
+            fontWeight = FontWeight.Black
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Preview
 @Composable
 fun Preview() {
-    HomeScreen()
+        HomeScreen()
 }
+
